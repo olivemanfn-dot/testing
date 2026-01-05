@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Strawberry Elephant Data Demo</title>
+<!-- Google Fonts for a modern look -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  /* Reset and base styles */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    background: linear-gradient(135deg, #f8d0e6, #ffe6f0);
+    color: #222;
+    line-height: 1.6;
+  }
+
+  h1 {
+    text-align: center;
+    padding: 30px 20px 10px;
+    font-size: 2.5em;
+    color: #a0522d;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  /* Container layout */
+  .container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* Card style for sections */
+  .card {
+    background-color: #ffffffcc;
+    border-radius: 15px;
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+    padding: 30px;
+    transition: all 0.3s ease;
+  }
+
+  /* Header styles */
+  .card h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    border-bottom: 3px solid #d14b6f;
+    padding-bottom: 10px;
+    color: #d14b6f;
+    font-weight: 600;
+  }
+
+  /* Form styles */
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 10px;
+    border: 2px solid #ccc;
+    font-size: 1em;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  input[type="text"]:focus,
+  input[type="password"]:focus {
+    border-color: #a0522d;
+    outline: none;
+    box-shadow: 0 0 8px rgba(161, 82, 45, 0.2);
+  }
+
+  /* Buttons style */
+  .btn {
+    padding: 14px 25px;
+    font-size: 1em;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s, transform 0.2s;
+  }
+
+  .btn-primary {
+    background-color: #d14b6f;
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background-color: #b13a55;
+    transform: translateY(-2px);
+  }
+
+  .btn-secondary {
+    background-color: #a0522d;
+    margin-left: 15px;
+  }
+
+  .btn-secondary:hover {
+    background-color: #804020;
+    transform: translateY(-2px);
+  }
+
+  /* Admin panel styles */
+  .admin-panel {
+    background-color: #fff0f5cc;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-in;
+  }
+
+  @keyframes fadeIn {
+    from {opacity: 0; transform: translateY(10px);}
+    to {opacity: 1; transform: translateY(0);}
+  }
+
+  .admin-header {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .admin-header h2 {
+    margin: 0;
+    font-size: 1.8em;
+    color: #a0522d;
+  }
+
+  /* Data display styles */
+  #dataDisplay {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.95em;
+    max-height: 350px;
+    overflow-y: auto;
+    border: 2px solid #d14b6f;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+  }
+
+  /* Responsive styles */
+  @media(max-width: 768px){
+    body {
+      padding: 10px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>Strawberry Elephant Data Demo</h1>
+
+<div class="container">
+
+  <!-- User Input Section -->
+  <div class="card" id="input-section">
+    <h2>Login with three username and password</h2>
+    <div class="form-group">
+      <label for="username">Username:</label>
+      <input type="text" id="username" placeholder="Enter username" />
+    </div>
+    <div class="form-group">
+      <label for="password">Password:</label>
+      <input type="password" id="password" placeholder="Enter password" />
+    </div>
+    <div style="margin-top:20px;">
+      <button class="btn btn-primary" id="saveBtn">Save Data</button>
+      <button class="btn btn-secondary" id="clearBtn">Clear Data</button>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div class="card admin-panel" id="admin-panel">
+    <div class="admin-header">
+      <h2>Admin Panel - View Data</h2>
+    </div>
+    <div id="dataDisplay">Waiting for data...</div>
+  </div>
+
+</div>
+
+<script>
+  /**
+   * ==========================
+   * Data Model & Storage Layer
+   * ==========================
+   */
+
+  // Local storage key
+  const STORAGE_KEY = 'demoData';
+
+  // Current data object
+  let currentData = {
+    username: '',
+    password: ''
+  };
+
+  /**
+   * ==========================
+   * DOM Element References
+   * ==========================
+   */
+  const elements = {
+    username: document.getElementById('username'),
+    password: document.getElementById('password'),
+    saveBtn: document.getElementById('saveBtn'),
+    clearBtn: document.getElementById('clearBtn'),
+    dataDisplay: document.getElementById('dataDisplay')
+  };
+
+  /**
+   * ==========================
+   * Utility & Helper Functions
+   * ==========================
+   */
+
+  /**
+   * Loads existing data from local storage and initializes inputs and display
+   */
+  function loadData() {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const data = JSON.parse(stored);
+        if (data && typeof data === 'object') {
+          currentData = {
+            username: data.username || '',
+            password: data.password || ''
+          };
+          // Populate inputs
+          elements.username.value = currentData.username;
+          elements.password.value = currentData.password;
+          // Update display
+          updateAdminDisplay(currentData);
+        } else {
+          throw 'Invalid data structure';
+        }
+      } else {
+        currentData = { username: '', password: '' };
+        updateAdminDisplay(currentData);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+      localStorage.removeItem(STORAGE_KEY);
+      currentData = { username: '', password: '' };
+      updateAdminDisplay(currentData);
+    }
+  }
+
+  /**
+   * Save current data to local storage
+   */
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
+    } catch (error) {
+      console.error('Failed to save data:', error);
+    }
+  }
+
+  /**
+   * Clear data from local storage and reset currentData
+   */
+  function clearData() {
+    localStorage.removeItem(STORAGE_KEY);
+    currentData = { username: '', password: '' };
+    // Reset inputs
+    elements.username.value = '';
+    elements.password.value = '';
+    // Update display
+    updateAdminDisplay(currentData);
+  }
+
+  /**
+   * Updates the admin panel display
+   * Only shows username and password
+   * @param {Object} data
+   */
+  function updateAdminDisplay(data) {
+    const displayData = {
+      username: data.username,
+      password: data.password
+    };
+    const formatted = JSON.stringify(displayData, null, 2);
+    elements.dataDisplay.innerHTML = `<pre>${formatted}</pre>`;
+  }
+
+  /**
+   * ==========================
+   * Event Handlers & Listeners
+   * ==========================
+   */
+
+  // Debounce handler to optimize real-time updates
+  let debounceTimeout = null;
+  function handleInputChange() {
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+      currentData.username = elements.username.value.trim();
+      currentData.password = elements.password.value;
+      saveData();
+      updateAdminDisplay(currentData);
+    }, 300);
+  }
+
+  function initializeEventListeners() {
+    // Real-time input change with debounce
+    elements.username.addEventListener('input', handleInputChange);
+    elements.password.addEventListener('input', handleInputChange);
+
+    // Save button explicitly saves
+    elements.saveBtn.addEventListener('click', () => {
+      currentData.username = elements.username.value.trim();
+      currentData.password = elements.password.value;
+      saveData();
+      updateAdminDisplay(currentData);
+    });
+
+    // Clear button resets everything
+    elements.clearBtn.addEventListener('click', () => {
+      clearData();
+    });
+  }
+
+  /**
+   * ==========================
+   * Initialization
+   * ==========================
+   */
+  window.addEventListener('DOMContentLoaded', () => {
+    loadData();
+    initializeEventListeners();
+  });
+</script>
+
+</body>
+</html>
